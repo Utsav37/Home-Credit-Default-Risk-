@@ -1,0 +1,1487 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Stylish Article
+% LaTeX Template
+% Version 2.1 (1/10/15)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Mathias Legrand (legrand.mathias@gmail.com) 
+% With extensive modifications by:
+% Vel (vel@latextemplates.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[fleqn,10pt]{SelfArx} % Document font size and equations flushed left
+
+\usepackage[english]{babel} % Specify a different language here - english by default
+
+\usepackage{lipsum} % Required to insert dummy text. To be removed otherwise
+\usepackage{underscore}
+
+%----------------------------------------------------------------------------------------
+%	COLUMNS
+%----------------------------------------------------------------------------------------
+
+\setlength{\columnsep}{0.55cm} % Distance between the two columns of text
+\setlength{\fboxrule}{0.75pt} % Width of the border around the abstract
+
+%----------------------------------------------------------------------------------------
+%	COLORS
+%----------------------------------------------------------------------------------------
+
+\definecolor{color1}{RGB}{0,0,90} % Color of the article title and sections
+\definecolor{color2}{RGB}{0,20,20} % Color of the boxes behind the abstract and headings
+
+%----------------------------------------------------------------------------------------
+%	HYPERLINKS
+%----------------------------------------------------------------------------------------
+
+\usepackage{hyperref} % Required for hyperlinks
+\hypersetup{hidelinks,colorlinks,breaklinks=true,urlcolor=color2,citecolor=color1,linkcolor=color1,bookmarksopen=false,pdftitle={Title},pdfauthor={Author}}
+
+%----------------------------------------------------------------------------------------
+%	ARTICLE INFORMATION
+%----------------------------------------------------------------------------------------
+
+\JournalInfo{Applied Machine Learning Fall 2018} % Journal information
+\Archive{} % Additional notes (e.g. copyright, DOI, review/research article)
+
+\PaperTitle{Semester Project - Home Credit Default Risk} % Article title
+
+\Authors{Author: Utsav Patel} % Author
+
+
+\Keywords{} % Keywords - if you don't want any simply remove all the text between the curly brackets
+%\newcommand{\keywordname}{Keywords} % Defines the keywords heading name
+
+%----------------------------------------------------------------------------------------
+%	ABSTRACT
+%----------------------------------------------------------------------------------------
+
+\Abstract{A bank provides loan only if the credit history of a customer is good. Cases when the credit history is not available, the bank has to rely on a hypothesis in order to provide loan to such customers. Our model can predict if a customer will default or not. It uses the historical loan application data to train. The challenge here is that there is more information on the non defaulters than on the defaulters in this dataset. We deal with several models and techniques and compare their performance and finally come up with the best model.}
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+\flushbottom % Makes all text pages the same height
+
+\maketitle % Print the title and abstract box
+
+\tableofcontents % Print the contents section
+
+\thispagestyle{empty} % Removes page numbering from the first page
+
+%----------------------------------------------------------------------------------------
+%	ARTICLE CONTENTS
+%----------------------------------------------------------------------------------------
+
+\section*{Introduction} % The \section*{} command stops section numbering
+
+\addcontentsline{toc}{section}{Introduction} % Adds this section to the table of contents
+
+%\lipsum[1-3] % Dummy text
+ Our project aims to use historical loan application data to predict whether or not an underserved applicant (a person with insufficient or no credit history) will be able to repay a loan. With an efficient model such as this, the banks and financial institutions can target just the potential customers. This will not only allow the banks to avoid spending resources unnecessarily but also provide a positive and safe borrowing [5] experience for the customer. The objective is especially eye catching considering the increase in the financial institutions over the years. We implement many supervised learning techniques such as Logistic Regression, Random Forest, K Nearest Neighbors, Decision Tree, Light GBM and XGBoost and compare each one of the results based on evaluation metrics We then choose the most efficient technique. 
+ 
+\pagebreak
+
+%------------------------------------------------
+
+\section{Models and Methodology}
+
+%\begin{figure*}[ht]\centering % Using \begin{figure*} makes the figure take up the entire %width of the page
+%\includegraphics[width=\linewidth]{view}
+%\caption{Wide Picture}
+%\label{fig:view}
+%\end{figure*}
+
+%\lipsum[4] % Dummy text
+
+We use only the application train data since including other tables features lead to a reduction in their performance. LightGBM on the other hand uses the other tables and provides better accuracy as compared to XGBoost model. \\
+
+\noindent
+We also mentioned SVM in proposal but are instead implementing Decision Tree since Decision Tree perform  better on unbalanced data.\\
+
+
+\noindent
+Below are the models we have implemented:\\
+Logistic Regression\\
+Random Forest\\
+Decision Tree\\
+K Nearest Neighbors\\
+XGBoost\\
+
+\subsection{Exploratory Data Analysis:}
+
+The training data has 307511 observations (each one a separate loan) and 122 features including the TARGET (the label we want to predict). \\
+
+\noindent
+1)	\textbf{Imbalance}\\
+For EDA first we examine the distribution of the Target Column : 0 -282686 and 1 - 24825,where 0 indicates the loan was repaid on time and 1 indicates the [4]
+client had payment difficulties. Imbalance-There are far more loans that were repaid on time than loans that were not repaid. i.e. there are more samples from class 0 than class1. 
+ \\
+Below are considerations to tackle this imbalance issue:\\
+\begin{itemize}
+	\item We analyse (later) various imbalance techniques with respect to each model and see which technique works for which model.
+	\item We use only the f1_score and recall in order to determine and compare the different models and find the best working model. This is because if we classify a defaulter as non defaulter (i.e.1 as 0), it is much worse than classifying a non defaulter as defaulter(i.e.0 as 1). i.e. we are more interested in having more true positives but at the same time have one of the better f1_scores.  
+\end{itemize}
+
+\noindent
+\textbf{Handle the imbalance issue: }
+When the samples between the two classes are not balanced then the model is more liable to learn about the majority class. This results in poorer classification of the minority class since there are not sufficient data available from the minority class. This behavior becomes more intense if the ratio of the majority to minority is very high – which is our case. There might be some models like decision tree that are exceptions to this scenario.\\
+
+\noindent
+We have applied four approaches to handle this issue:\\
+\begin{itemize}
+	\item Oversampling:\\
+	In this method the data from the minority class is replicated so that a balance can be established between the two classes.
+	\item Undersampling:\\
+	In this method the data from the majority class is removed in order to balance the data.
+	\item Synthetic minority oversampling technique:\\
+	The over sampling of the minority dataset is done synthetically using an algorithm. Data from the minority class is not replicated. This prevents over fitting which is prevalent in oversampling.
+	\item Improve the cost function:\\
+	There are several approaches-[1] one which we are using is class weights. The class weights are added to the minority class so that the cost function accounts more for the error in minority class.\\
+	To determine the best f1_score at each noise level we do a grid search and get the best model to test against the test data in step2 explained in approaches section.
+\end{itemize}
+\textbf{Noise levels for each imbalance technique: }
+\begin{itemize}
+	\item Sampling strategy- It is the ratio of the number of samples in minority class over the number of samples in the majority class. This parameter is used for OverSampling, UnderSampling and SMOTE.
+	\item Class weights- It specifies the weights to be given to the error from each class in the cost function. We set more weights on the minority class in order to make the model more sensitive to its errors on the minority class. This noise level is applicable for the cost function based approach.\\
+\end{itemize}	
+
+\noindent
+2) \textbf{Anomalies:}\textsubscript{4}
+Using the analysis from the above unique values we treat the anomalies:\\
+\begin{itemize}
+	\item DAYS_EMPLOYED- The maximum value - 365243 is about 1000 years. So we replaced all anomalous values with nan.
+	\item CODE_GENDER- Replace the value XNA with nan since M and F are the only possible values
+	\item DAYS_LAST_PHONE_CHANGE-Replace 0 with nan since 0 is not a possible value for this column
+\end{itemize}
+
+\noindent
+3)  \textbf{Label Encoding:}\\
+
+\noindent
+Next we encode the Categorical Variables:\\
+\begin{itemize}
+	\item Label Encoding for any categorical variables with only 2 categories
+	\item One-Hot Encoding for any categorical variables with more than 2 categories. In total - 3 columns were label encoded. 
+	
+\end{itemize}
+4) \textbf{Missing Values:} \\
+
+\noindent
+Next we look at the number and percentage of missing values in each column There are 67 columns that have missing values. We used 3 different techniques for handling missing values. ([4] Note the code for finding the missing values are referenced but the strategies and how we treat them is our approach)\\
+Below are details on the strategies we tried to handle the missing values.
+\begin{itemize}
+	\item -999 strategy:\\
+	we replace every missing value with -999. 
+	\item mean mode approach:\\
+	For every column with missing values (say eg. col):\\
+	Step1) Create a new column that has value 1 if col has missing value and has 0 otherwise.\\
+	Step2) Replace every missing value in col with mean if it is a numerical column and every missing value in categorical column with mode.\\
+	
+	This method works for many reasons, firstly the new column added gives new information on missing values which it can use to give better accuracy.\\
+	
+	\item Strategic imputer:\\                                                                               
+	Below are the steps:\\
+	We identify the below datasets\\
+	DatasetA-There are 76 continous non categorical data\\
+	DatasetB-There are 46 categorical and continuous data.\\
+	
+	We treat both datasets differently:\\
+	DatasetA:\\
+	-	It has min value 0 and max value 1 – The missing values are replaced with the mode of the column\\
+	DatasetB:\\
+	-	If it is an object perform one hot encoding\\
+	-	If it is float then do mode of that column\\
+	
+	\item Failed Attempts:\\
+	1)  Aggregation \\
+	We aggregate the numeric columns based on the group by columns using the method mean or max.\\
+	
+	Group by columns - numeric columns- method\\
+	1)'CODE_GENDER', 'NAME_EDUCATION_TYPE' -  AMT_ANNUITY - max\\
+	'CODE_GENDER', 'ORGANIZATION_TYPE'	-AMT_INCOME_TOTAL,DAYS_REGISTRATION -mean\\
+	2)'CODE_GENDER', 'REG_CITY_NOT_WORK_CITY'-'CNT_CHILDREN' - mean\\
+	3)'NAME_EDUCATION_TYPE', 'OCCUPATION_TYPE' -	AMT_CREDIT, AMT_REQ_CREDIT_BUREAU_YEAR, APARTMENTS_AVG, BASEMENTAREA_AVG, NONLIVINGAREA_AVG, OWN_CAR_AGE, YEARS_BUILD_AVG -mean\\
+	4) 'NAME_EDUCATION_TYPE', 'OCCUPATION_TYPE', 'REG_CITY_NOT_WORK_CITY'-ELEVATORS_AVG –mean\\
+	
+	The resulting aggregated column has more correlation with the target column and works for some models like Random Forest but might increase correlation with the group by columns.\\
+	
+	2)	Normalization- We tried normalizing the data in application train but it reduced the performance hence was not used.\\
+	
+\end{itize}
+
+
+
+
+
+\subsection{APPROACHES:}
+
+
+\textbf{Experiment to find the best missing value strategy:}
+\begin{itemize}
+	\item Step1) Treat the anomalies.
+	\item Step2) Perform the label encoding and one hot encoding on the categorical columns
+	\item Step3) Find the columns containing missing values- (this includes the newly one hot encoded columns)
+	\item Step4) Apply the -999 missing value strategy
+	\item Step5) Split the data into train and test set
+	\item Step6) Perform tree based feature selection on the train data. Find the feature importances. Based on these feature importances we subset the train data and the test data.
+	\item Step7) Perform a grid search for each model and find the best possible accuracy and the best hyper parameters.
+	\item Step8) Perform steps 1 to 6 for other missing value strategies 
+	\item Step9) We use the hyper parameters found in Step7. If the performance is poor than -999 strategy , only then try to find the best hyperparameters for that missing value strategy.
+	\item Step10) Based on the results obtained we decide which method best works for which model.
+	
+\end{itemize}
+
+\textbf{Experiment on the techniques to handle imbalance:}
+\begin{itemize}
+	\item Step1) Perform the EDA of the dataset- anomalies and label encoding. Use the best performing missing value strategy for each model.
+	\item Step2) split the dataset into train and test
+	\item 	Step3) Only for the train dataset, do step4 onwards.
+	\item Step4) For each model, iterate over different levels of noise and repeat step 5 to 6 for each iteration
+	\item 	Step5) Perform feature engineering on the resampled train set.
+	\item Step6) Grid Search at each sampling strategy in order to fetch the best possible accuracy (f1_score) at each noise level. To determine the best f1_score for each noise we use the best grid model against the test data in step2.
+	\item Step7) Finally find the sweet spot - the value of sampling strategy where the model gives the highest f1 score.
+	\item 	Step8) Perform steps 2 to 7 for each imbalance technique and observe the best solutions for each model.
+	
+\end{itemize}
+
+
+\subsection{Approach to combine all 7 tables:}
+Combining all tables was really a great issue for us. This was because it was having too much of Missing values. The Missing value \% for a column was as high as 70\% in many cases. Below is the image for the same.\\
+\includegraphics[width=\linewidth]{utsav1.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+
+\noindent
+This was true for all 7 tables. Moreover, if we combine those tables into one, all of them  would be having much higher missing values.\\
+
+\noindent
+•	Adding useful features: For almost all tables we entered our own columns by performing some logical operations on two columns that were already present. As a result at the end We had many self created columns in top 50 features from total of 798 features that we got after combining all tables. \\
+
+\noindent
+•	Using Mean for person’s entries: Suppose a normal distribution. If we are having 1 Million entries of ages. Now suppose, we have to estimate another 1 Million data of ages that are missing. Any approach you got in mind? Best approach would be to assume that all have ages of around current mean which would be best estimate for missing values. I used this approach in indirectly filling NA’s. I did grouping by SK_ID_BUREAU and then found mean and entered as a column in separate dataframe that is used later. Thus if there are 50 entries of particular SK_ID_BUREAU, corresponding to those all, we will mean all values of other columns and make it as a entry. \\
+\includegraphics[width=\linewidth]{utsav2.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+
+\noindent
+•	Min mean max var: Moreover for some tables , we found the mean, minimum, maximum and variance of columns of ID’s by grouping them by SK_ID_CURR (for other tables this ID might differ).\\
+
+\includegraphics[width=\linewidth]{utsav3.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+
+
+\noindent
+•	Replacing anomalies: For some tables, we had to replace anomalies like age being 365243 and such entries  with nan. We replaced it with nan because XGBoost and LightGBM handles missing values efficiently by guessing value that reduces log loss error rather than us imputing them with values that might increase log loss error. \\
+
+\includegraphics[width=\linewidth]{utsav4.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+
+\noindent
+•	Using Credit Active and Credit Inactive column: For bureau table we used credit active and inactive credit as a useful information and then we approached it in a manner explained in Mean, min, max and var (only for numerical columns). \\
+
+\noindent
+STEP 1:\\
+\includegraphics[width=\linewidth]{utsav5.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+
+\noindent
+STEP 2:\\
+\includegraphics[width=\linewidth]{utsav6.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+
+\noindent
+We did same for inactive credit entries also.\\
+
+\noindent
+•	We approached in above mentioned 5 techniques for all the tables and at the end we had our dataframe exported to csv file.\\
+
+
+\includegraphics[width=\linewidth]{utsav7.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+
+
+
+\subsection{MODEL IMPLEMENTATION: }
+Below are the models we have implemented:\\
+Logistic Regression\\
+Random Forest\\
+Decision Tree\\
+K Nearest Neighbors\\
+XGBoost\\
+
+\noindent
+\textbf{Performance issues:}
+There are two key factors that influence the performance of the models:\\
+\begin{itemize}
+	\item The data is extremely unbalanced. Class 0 data is more than 10 times Class 1 in the training set:\\
+	\item The strategy applied to handle the missing values
+	({0: 226132, 1: 19876})
+\end{itemize}
+
+
+
+\pagebreak
+\section{EXPERIMENTS AND RESULTS:}
+
+\subsection{Experiment to find the best missing value strategy:}
+1)	Replace missing with -999\\
+
+\includegraphics[width=\linewidth]{raja3.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+
+2)	Replace missing values with -999 after aggregation technique\\
+
+\includegraphics[width=\linewidth]{raja4.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+
+\pagebreak
+3)	Mean Mode Imputation:\\
+
+\includegraphics[width=\linewidth]{raja5.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+
+4)	Mean Mode imputation after aggregation technique\\
+
+\includegraphics[width=\linewidth]{raja6.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+\pagebreak
+5)	Strategic Imputer:\\
+
+\includegraphics[width=\linewidth]{raja7.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+
+\noindent
+OBSERVATIONS:\\
+
+\noindent
+1)	The K Nearest model gives neighbor 1 as the best model, hence we have taken the second best as well i.e. 3 neighbors. 1 neighbor is also a valid hyperparameter , it works well especially in binary class problems.\\
+
+\noindent
+2)	–The KNN model performs best with the -999 imputer, Strategic imputer (for neighbor3 it does not) and meanmode imputer while performing poorly on the strategies with aggregation.\\ It is possible that the aggregation lead to increase in correlation between the categorical groupby features and agg columns-which is not preferable-although the new agg columns have increased correlation with the output Y-which is preferable.\\
+
+\noindent
+3)	The Random Forest performs best with meanmode and strategic imputer. Note here the -999 with agg performs better than without agg. Our guess is that the correlation issue explained in point 2 did not affect RF on account of the bootstrapping involved in its process.\\
+
+\noindent
+4)	The Decision tree performs best with mean mode imputer.\\
+
+\noindent
+5)	Logistic Regression –The -999 approach works the best closely followed by the mean mode technique. \\
+
+\noindent
+6)	Overall the Mean mode technique of imputation works best for all models. Hence we choose this method as missing value strategy for all models.\\
+
+\pagebreak
+\subsection{Experiment on the techniques to handle imbalance:}
+Below are the results and observations for each model:\\
+
+\bigbreak
+\noindent
+\textbf{	DECISION TREE:}\\
+\bigbreak
+\noindent
+\textbf{1) Oversampling:}\\
+
+\noindent
+F1_score at different levels of noise (noise-f1_score) :\\
+(0.15, 0.145716),( 0.3,0.147995),(0.45, 0.142224),\\
+( 0.75, 0.144683), (0.9, 0.135496)\\                      
+
+\noindent
+Best Sampling strategy-- 0.3\\
+
+\noindent
+Y train after resampling Counter({0: 226132, 1: 67839})\\
+Improved number of features-- 90\\
+
+\noindent
+Best parameter on grid-- ('random_state': 42, 'max_features': 'auto', 'max_depth': 50, 'criterion': 'gini')\\
+
+\noindent
+DECISION TREE model:\\
+Train Confusion Matrix:
+
+\begin{tabular}{c|c|c||c}
+	$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+	\toprule 
+	L = 0 & $226130$ & $2$ & $$\\
+	\midrule
+	L = 1 & $3$ &$67836$ & $$\\ \hline \hline
+	& $$ & $$  &\end{tabular}
+   \bigbreak
+\noindent
+	Test Confusion Matrix:
+	
+	\begin{tabular}{c|c|c||c}
+		$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+		\toprule 
+		L = 0 & $52080$ & $4474$ & $$\\
+		\midrule
+		L = 1 & $4196$ &$753$ & $$\\ \hline \hline
+		& $$ & $$  &\end{tabular}	
+		
+        
+        \bigbreak
+\noindent
+		\begin{tabular}{lllll}
+			& PRECISION & RECALL  & F1\_SCORE & AUC      \\
+			Train & 0.999       & 0.999 & 0.999     & 1.00 \\
+			Test  & 0.144     & 0.152   & 0.147     & 0.536   
+		\end{tabular}
+
+\bigbreak
+\noindent
+\textbf{2) SMOTE:}\\
+\bigbreak
+\noindent
+F1_score at different levels of noise (noise- f1_score) :\\
+(0.15, 0.073491,(0.45, 0.083753),( 0.75, 0.083657), (0.9, 0.091882)\\                      
+\noindent
+Sampling strategy-- 0.9\\
+
+\noindent
+Y train after resampling Counter({0: 226132, 1: 203518})\\
+Improved number of features- 111\\
+Best parameter on grid-- ('random_state': 42, 'max_features': 'auto', 'max_depth': 20, 'criterion': 'gini')\\
+
+\bigbreak
+\noindent
+DECISION TREE model:\\
+
+\bigbreak
+\noindent
+Train Confusion Matrix:
+
+\begin{tabular}{c|c|c||c}
+	$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+	\toprule 
+	L = 0 & $225182$ & $950$ & $$\\
+	\midrule
+	L = 1 & $14191$ &$189327$ & $$\\ \hline \hline
+	& $$ & $$  &\end{tabular}
+	\bigbreak
+    \noindent
+	Test Confusion Matrix:
+	
+	\begin{tabular}{c|c|c||c}
+		$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+		\toprule 
+		L = 0 & $5254463$ & $2091$ & $$\\
+		\midrule
+		L = 1 & $4610$ &$339$ & $$\\ \hline \hline
+		& $$ & $$  &\end{tabular}	
+		\bigbreak
+\noindent
+		\begin{tabular}{lllll}
+			& PRECISION & RECALL  & F1\_SCORE & AUC      \\
+			Train & 0.995     & 0.932 & 0.961     & 0.990 \\
+			Test  & 0.139     & 0.068   & 0.091     & 0.589   
+		\end{tabular}
+
+\bigbreak
+\noindent
+\textbf{3) Under Sampling:}\\ 
+F1_score at different levels of noise (noise-f1_score) :\\
+(0.15, 0.163427),(0.6, 0.194770),( 0.75, 0.193454), (0.9, 0.185412) \\ 
+\bigbreak
+\noindent
+Sampling strategy-- 0.6\\
+Y train after resampling Counter({0: 33126, 1: 19876})\\
+Improved number of features- 94\\
+Best parameter on grid-- {'random_state': 42, 'max_features': 'auto', 'max_depth': 20, 'criterion': 'gini'}\\
+
+\noindent
+DECISION TREE model:\\
+
+\noindent
+Train Confusion Matrix:
+
+\begin{tabular}{c|c|c||c}
+	$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+	\toprule 
+	L = 0 & $30749  $ & $2377$ & $$\\
+	\midrule
+	L = 1 & $3446 $ &$16430$ & $$\\ \hline \hline
+	& $$ & $$  &\end{tabular}
+	\bigbreak
+    \noindent
+	Test Confusion Matrix:
+	
+	\begin{tabular}{c|c|c||c}
+		$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+		\toprule 
+		L = 0 & $40102 $ & $16452$ & $$\\
+		\midrule
+		L = 1 & $2640  $ &$2309$ & $$\\ \hline \hline
+		& $$ & $$  &\end{tabular}	
+		\bigbreak
+\noindent
+		\begin{tabular}{lllll}
+			& PRECISION & RECALL  & F1\_SCORE & AUC      \\
+			Train & 0.873     & 0.826 & 0.849     & 0.963 \\
+			Test  & 0.123     & 0.466   & 0.194     & 0.583   
+		\end{tabular}
+
+\bigbreak
+\noindent
+\textbf{4)COST FUNCTION BASED APPROACH:}
+\bigbreak
+\noindent
+Class weights-- {0: 0.1, 1: 0.9}
+Improved number of features- 95
+Best parameter on grid-- {'random_state': 42, 'max_features': 'auto', 'max_depth': 20, 'criterion': 'gini'}
+DECISION TREE model:
+Train Confusion Matrix:
+\bigbreak
+\noindent
+
+\begin{tabular}{c|c|c||c}
+	$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+	\toprule 
+	L = 0 & $187596    $ & $38536$ & $$\\
+	\midrule
+	L = 1 & $1955   $ &$17921$ & $$\\ \hline \hline
+	& $$ & $$  &\end{tabular}
+	\bigbreak
+\noindent
+	Test Confusion Matrix:
+	
+	\begin{tabular}{c|c|c||c}
+		$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+		\toprule 
+		L = 0 & $44608  $ & $11946$ & $$\\
+		\midrule
+		L = 1 & $2921    $ &$2028$ & $$\\ \hline \hline
+		& $$ & $$  &\end{tabular}	
+		\bigbreak
+\noindent
+		\begin{tabular}{lllll}
+			& PRECISION & RECALL  & F1\_SCORE & AUC      \\
+			Train & 0.317     & 0.901 & 0.469	     & 0.941 \\
+			Test  & 0.145     & 0.409   & 0.214     & 0.598   
+		\end{tabular}
+
+\textbf{Observations:}
+\begin{itemize}
+	\item Oversampling-we observed that introduction of more noise i.e. replicating the minority class only leads to overfitting and the decision tree performs poorly. This is possibly the reason why the best result is found at such low sampling strategy (0.3). 
+	\item Interestingly the best f1 score obtained at 0.3 in oversampling is even worse than the BASE model. This is because the model trains on same samples of the minority class multiple times due to replication and eventually trains specific to the samples themselves and not on the class features.
+	\item One of the better results are with undersampling and worst with SMOTE. Similar to RF it is unable to learn and benefit from the new synthetic samples. Although it benefits from the undersampling strategy where the balance is set at 0.6 and a recal of 0.46 and f1_score 0.19 is achieved. The results at undersampling and oversampling are 10 times better than that at Smote.
+	\item It works the best with the cost function based approach with f1_score more than 0.2 and recall more than 0.4.
+\end{itemize}
+
+\bigbreak
+\noindent
+\textbf{	Random Forest:}\\
+\newline
+\noindent
+\textbf{1)Oversampling:}\\
+\newline
+\noindent
+F1_score at different levels of noise (noise-f1_score) :\\
+(0.15- 0.039771), (0.45, 0.063275), (0.75, 0.067977), ( 0.9, 0.069861)
+
+
+\noindent
+Best Sampling strategy-- 0.9\\
+\newline
+Y train after resampling Counter({0: 226132, 1: 203518})\\
+Improved number of features- 85\\
+Best parameter on grid-- {'n_estimators': 17, 'max_features': 'auto', 'max_depth': 90, 'bootstrap': True}\\
+Random Forest model:\\
+\bigbreak
+\noindent
+Train Confusion Matrix:
+
+
+\begin{tabular}{c|c|c||c}
+	$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+	\toprule 
+	L = 0 & $226131$ & $1$ & $$\\
+	\midrule
+	L = 1 & $0$ &$203518$ & $$\\ \hline \hline
+	& $$ & $$  &\end{tabular}
+\bigbreak
+\noindent
+	Test Confusion Matrix:
+	
+	\begin{tabular}{c|c|c||c}
+		$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+		\toprule 
+		L = 0 & $56226$ & $328$ & $$\\
+		\midrule
+		L = 1 & $4758$ &$191$ & $$\\ \hline \hline
+		& $$ & $$  &\end{tabular}	
+		\bigbreak
+\noindent
+		\begin{tabular}{lllll}
+			& PRECISION & RECALL  & F1\_SCORE & AUC     \\
+			Train & 0.999       & 1.00 & 0.999     & 1.00 \\
+			Test  & 0.368     & 0.0385   & 0.069     & 0.682   
+		\end{tabular}
+\bigbreak
+\noindent
+\textbf{SMOTE: }
+F1_score at different levels of noise (noise-f1_score) :\\
+(0.15- 0.201405), (0.45, 0.021696), (0.75, 0.017765), ( 0.9, 0.015032)\\
+\bigbreak
+\noindent
+Y train before resampling Counter({0: 226132, 1: 19876})\\
+Sampling strategy-- 0.15\\
+\bigbreak
+\noindent
+Y train after resampling Counter({0: 226132, 1: 33919})\\
+Improved number of features- 105\\
+Best parameter on grid-- {'n_estimators': 13, 'max_features': 'auto', 'max_depth': 90, 'bootstrap': True}\\
+\bigbreak
+\noindent
+Random Forest model:
+\bigbreak
+\noindent
+Train Confusion Matrix:\\
+
+\begin{tabular}{c|c|c||c}
+	$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+	\toprule 
+	L = 0 & $226129$ & $3$ & $$\\
+	\midrule
+	L = 1 & $1513  $ &$32406	$ & $$\\ \hline \hline
+	& $$ & $$  &\end{tabular}
+	
+	\bigbreak
+\noindent
+	Test Confusion Matrix:
+	
+	
+	\begin{tabular}{c|c|c||c}
+		$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+		\toprule 
+		L = 0 & $56395   $ & $159$ & $$\\
+		\midrule
+		L = 1 & $4859    $ &$90$ & $$\\ \hline \hline
+		& $$ & $$  &\end{tabular}
+		
+		
+		
+		\begin{tabular}{lllll}
+			& PRECISION & RECALL & F1\_SCORE & AUC \\
+			Train & 0.999     & 0.955 & 0.977     & 0.999          \\
+			Test  & 0.361     & 0.018  & 0.034     & 0.651         
+		\end{tabular}
+\bigbreak
+\noindent
+
+\pagebreak
+\noindent
+\textbf{UNDERSAMPLING:}
+\newline
+\newline
+\noindent
+F1_score at different levels of noise (noise-f1_score) :\\
+(0.15:- 0.034629), (0.6, 0.255757), (0.75, 0.246021), ( 0.9, 0.239339)\\
+\bigbreak
+\noindent
+Sampling strategy-- 0.6\\
+Y train after resampling Counter({0: 33126, 1: 19876})\\
+Improved number of features- 96\\
+Best parameter on grid-- {'n_estimators': 17, 'max_features': 'auto', 'max_depth': 90, 'bootstrap': True}\\
+\bigbreak
+\noindent
+Random Forest model:\\
+\bigbreak
+\noindent
+Train Confusion Matrix:\\
+\bigbreak
+\noindent
+\begin{tabular}{c|c|c||c}
+	$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+	\toprule 
+	L = 0 & $33099    $ & $27$ & $$\\
+	\midrule
+	L = 1 & $148   $ &$19728	$ & $$\\ \hline \hline
+	& $$ & $$  &\end{tabular}
+	
+	\bigbreak
+\noindent
+	Test Confusion Matrix:
+	
+	
+	\begin{tabular}{c|c|c||c}
+		$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+		\toprule 
+		L = 0 & $46656     $ & $9898$ & $$\\
+		\midrule
+		L = 1 & $2772      $ &$2177$ & $$\\ \hline \hline
+		& $$ & $$  &\end{tabular}
+		
+		
+		\bigbreak
+\noindent
+		\begin{tabular}{lllll}
+			& PRECISION & RECALL & F1\_SCORE & AUC \\
+			Train & 0.998     & 0.992 & 0.995     & 0.999          \\
+			Test  & 0.180     & 0.439  & 0.255     & 0.700         
+		\end{tabular}
+
+\bigbreak
+\noindent
+Sampling strategy-- 0.9\\
+Y train after resampling Counter({0: 22084, 1: 19876})\\
+Improved number of features- 95\\
+Best parameter on grid-- {'n_estimators': 17, 'max_features': 'auto', 'max_depth': 90, 'bootstrap': True}\\
+\bigbreak
+\noindent
+
+\noindent
+Random Forest model:\\
+\bigbreak
+\noindent
+Train Confusion Matrix:\\
+
+\begin{tabular}{c|c|c||c}
+	$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+	\toprule 
+	L = 0 & $22050$ & $34$ & $$\\
+	\midrule
+	L = 1 & $68    $ &$1980$ & $$\\ \hline \hline
+	& $$ & $$  &\end{tabular}
+	\bigbreak
+\noindent
+
+\noindent
+	Test Confusion Matrix:
+	
+		\bigbreak
+\noindent
+	\begin{tabular}{c|c|c||c}
+		$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+		\toprule 
+		L = 0 & $39331$ & $17223$ & $$\\
+		\midrule
+		L = 1 & $1935$ &$3014$ & $$\\ \hline \hline
+		& $$ & $$  &\end{tabular}
+		
+		\bigbreak
+\noindent		
+		\begin{tabular}{lllll}
+			& PRECISION & RECALL & F1\_SCORE & AUC \\
+			Train & 0.998     & 0.996 & 0.997     & 0.999          \\
+			Test  & 0.148     & 0.609  & 0.239     & 0.705         
+		\end{tabular}
+	
+	\bigbreak
+\noindent
+
+COST FUNCTION BASED APPROACH:\\
+\bigbreak
+\noindent
+Train Confusion Matrix:\\
+Class weights-- {0: 0.6, 1: 0.4}\\
+Improved number of features- 95\\
+Best parameter on grid-- {'n_estimators': 5, 'max_features': 'auto', 'max_depth': 90, 'bootstrap': True}\\
+\bigbreak
+\noindent
+
+Random Forest model:\\
+
+\bigbreak
+\noindent
+Train Confusion Matrix:\\
+\begin{tabular}{c|c|c||c}
+	$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+	\toprule 
+	L = 0 & $225899    $ & $233$ & $$\\
+	\midrule
+	L = 1 & $3616      $ &$16260$ & $$\\ \hline \hline
+	& $$ & $$  &\end{tabular}
+	
+	\bigbreak
+\noindent
+Train Confusion Matrix:\\
+	Test Confusion Matrix:
+	
+	
+	\begin{tabular}{c|c|c||c}
+		$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+		\toprule 
+		L = 0 & $55684   $ & $870$ & $$\\
+		\midrule
+		L = 1 & $4652   $ &$297$ & $$\\ \hline \hline
+		& $$ & $$  &\end{tabular}
+		
+		
+		
+		\begin{tabular}{lllll}
+			& PRECISION & RECALL & F1\_SCORE & AUC \\
+			Train & 0.958     & 0.818 & 0.894     & 0.993          \\
+			Test  & 0.254     & 0.060  & 0.097     & 0.607         
+		\end{tabular}	
+	\bigbreak
+	\noindent
+	\textbf{Observation:}\\
+	\begin{itemize}
+		\item Oversampling:\\
+		The performance of Random Forest increases with more samples from the minority class. It has much less tendency to overfit when compared to the decision tree. This is due to the bootstrapping which is done as part of random forest that involves random resampling of data with replacement.\\
+		\item We also observe that the number of trees (estimators) are very low. This is possibly due to the data being imbalanced it tends to converge to a decision tree. i.e. there are not enough samples from the minority class in the trees inside the random forest.\\
+		\item The highest performance with oversampling is less than the f1_score without oversampling.\\
+		\item Smote:\\
+		The performance with Smote is the lowest, the random forest is unable to learn the new samples added since they are different from the actual dataset.\\
+		\item Undersampling:\\
+		RF performs the best with undersampling with f1_score reaching peak at 0.26 at 0.6 sampling strategy and recall of 0.6 at 0.9 sampling strategy. This shows how sensitive RF is with imbalanced data.  With balanced data its f1_score is 10 times that before resampling\\
+		\item 	Cost function based approach is not that helpful with RF.
+		
+	\end{itemize}
+\textbf{	Logistic Regression:}\\
+
+\noindent
+\textbf{1)OVER SAMPLING:}\\
+\noindent
+F1_score at different levels of noise (noise-f1_score):\\
+(0.15, 0.101225),( 0.45, 0.291804),(0.6, 0.293157),
+(0.75, 0.283418),(0.9, 0.266181)   \\                         
+Recall score at different levels of noise (noise-recall):\\
+(0.15, 0.057587 ),( 0.45, 0.358254),(0.6, 0.478683),\\
+(0.75,0.577288),(0.9,0.642756)\\
+
+\noindent
+Sampling strategy-- 0.9\\
+Y train after resampling Counter({0: 226132, 1: 203518})\\
+Improved number of features- 86\\
+Best parameter on grid-- {'penalty': 'l1', 'C': 0.5}\\
+\newline
+\noindent
+Logistic Regression model:
+\bigbreak
+\noindent
+Train Confusion Matrix:
+\bigbreak
+\noindent
+\begin{tabular}{c|c|c||c}
+	$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+	\toprule 
+	L = 0 & $163385  $ & $62747$ & $$\\
+	\midrule
+	L = 1 & $72562 $ &$130956$ & $$\\ \hline \hline
+	& $$ & $$  &\end{tabular}
+	\bigbreak
+\noindent
+	Test Confusion Matrix:
+   \bigbreak
+\noindent
+	\begin{tabular}{c|c|c||c}
+		$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+		\toprule 
+		L = 0 & $40783 $ & $15771$ & $$\\
+		\midrule
+		L = 1 & $1768  $ &$3181$ & $$\\ \hline \hline
+		& $$ & $$  &\end{tabular}	
+		\bigbreak
+		\begin{tabular}{lllll}
+			& PRECISION & RECALL  & F1\_SCORE & AUC      \\
+			Train & 0.676       & 0.643 & 0.659     & 0.748 \\
+			Test  & 0.167     & 0.642   & 0.266     & 0.748   
+		\end{tabular}
+
+\noindent
+Sampling strategy-- 0.6\\
+\noindent
+Y train after resampling Counter({0: 226132, 1: 135679})\\
+Improved number of features- 87\\
+Best parameter on grid-- {'penalty': 'l1', 'C': 0.2}\\
+\bigbreak
+\noindent
+Logistic Regression model:\\
+\bigbreak
+\noindent
+Train Confusion Matrix:
+\bigbreak
+\noindent
+\begin{tabular}{c|c|c||c}
+	$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+	\toprule 
+	L = 0 & $190761    $ & $35371$ & $$\\
+	\midrule
+	L = 1 & $71021   $ &$64658$ & $$\\ \hline \hline
+	& $$ & $$  &\end{tabular}
+	\bigbreak
+\noindent
+	Test Confusion Matrix:
+	\bigbreak
+\noindent
+	\begin{tabular}{c|c|c||c}
+		$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+		\toprule 
+		L = 0 & $47710   $ & $8844$ & $$\\
+		\midrule
+		L = 1 & $2580    $ &$2369$ & $$\\ \hline \hline
+		& $$ & $$  &\end{tabular}	
+		\bigbreak
+\noindent
+		\begin{tabular}{lllll}
+			& PRECISION & RECALL  & F1\_SCORE & AUC      \\
+			Train & 0.646	  & 0.476 & 0.548     & 0.748 \\
+			Test  & 0.211     & 0.478   & 0.293     & 0.748   
+		\end{tabular}
+\bigbreak
+\noindent
+\textbf{2) SMOTE:}
+\bigbreak
+\noindent
+F1_score at different levels of noise (noise-f1_score):\\
+(0.15, 0.115375),( 0.45, 0.295989),(0.6, 0.293079),\\
+(0.75, 0.283418),(0.9, 0.279562)  \\                          
+
+\noindent
+Sampling strategy-- 0.45\\
+Y train after resampling Counter({0: 226132, 1: 101759})\\
+Improved number of features- 112\\
+Best parameter on grid-- {'penalty': 'l1', 'C': 0.8}\\
+\bigbreak
+\noindent
+Logistic Regression model:\\
+\bigbreak
+\noindent
+\begin{tabular}{c|c|c||c}
+	$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+	\toprule 
+	L = 0 & $201569      $ & $24563$ & $$\\
+	\midrule
+	L = 1 & $64445     $ &$37314$ & $$\\ \hline \hline
+	& $$ & $$  &\end{tabular}
+	\bigbreak
+\noindent
+	Test Confusion Matrix:
+	\bigbreak
+\noindent
+	\begin{tabular}{c|c|c||c}
+		$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+		\toprule 
+		L = 0 & $50415     $ & $6139$ & $$\\
+		\midrule
+		L = 1 & $3023  	    $ &$1926$ & $$\\ \hline \hline
+		& $$ & $$  &\end{tabular}	
+		\bigbreak
+\noindent
+		\begin{tabular}{lllll}
+			& PRECISION & RECALL  & F1\_SCORE & AUC      \\
+			Train & 0.603	  & 0.366 & 0.456     & 0.764 \\
+			Test  & 0.238     & 0.398   & 0.295     & 0.747   
+		\end{tabular}
+	\bigbreak
+\noindent
+	\textbf{UNDERSAMPLING:}
+	\bigbreak
+\noindent
+	F1_score at different levels of noise (noise- f1_score) :\\
+	(0.15- 0.039771), (0.45, 0.063275), (0.75, 0.067977), ( 0.9, 0.069861)\\
+
+\noindent
+	Sampling strategy-- 0.6\\
+	Y train after resampling Counter({0: 33126, 1: 19876})\\
+	Improved number of features- 96\\
+	Best parameter on grid-- {'penalty': 'l1', 'C': 0.8}\\
+    \bigbreak
+\noindent
+	Logistic Regression model:\\
+    \bigbreak
+\noindent
+	Train Confusion Matrix:
+    \bigbreak
+\noindent
+	\begin{tabular}{c|c|c||c}
+		$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+		\toprule 
+		L = 0 & $27915        $ & $5211$ & $$\\
+		\midrule
+		L = 1 & $10488       $ &$9388$ & $$\\ \hline \hline
+		& $$ & $$  &\end{tabular}
+		\bigbreak
+\noindent
+		Test Confusion Matrix:
+		\bigbreak
+\noindent
+		\begin{tabular}{c|c|c||c}
+			$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+			\toprule 
+			L = 0 & $47812       $ & $8742$ & $$\\
+			\midrule
+			L = 1 & $2595  	    $ &$2354$ & $$\\ \hline \hline
+			& $$ & $$  &\end{tabular}	
+			\bigbreak
+\noindent
+			\begin{tabular}{lllll}
+				& PRECISION & RECALL  & F1\_SCORE & AUC     \\
+				Train & 0.643	  & 0.472 & 0.544     & 0.746 \\
+				Test  & 0.212     & 0.475   & 0.293     & 0.748   
+			\end{tabular}
+            \bigbreak
+\noindent
+	\textbf{COST FUNCTION BASED APPROACH:}\\
+    \bigbreak
+\noindent
+	Class weights-- {0: 0.1, 1: 0.9}\\
+	Improved number of features- 96\\
+	Best parameter on grid-- {'penalty': 'l1', 'C': 0.8}\\
+    \bigbreak
+\noindent
+	Logistic Regression model:\\
+    \bigbreak
+\noindent
+	Train Confusion Matrix:
+    \bigbreak
+\noindent
+		\begin{tabular}{c|c|c||c}
+		$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+		\toprule 
+		L = 0 & $173117        $ & $53015$ & $$\\
+		\midrule
+		L = 1 & $8101       $ &$11775$ & $$\\ \hline \hline
+		& $$ & $$  &\end{tabular}
+		\bigbreak
+\noindent
+		Test Confusion Matrix:
+		\bigbreak
+\noindent
+		\begin{tabular}{c|c|c||c}
+			$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+			\toprule 
+			L = 0 & $4321       $ & $13335$ & $$\\
+			\midrule
+			L = 1 & $2002    	    $ &$2947$ & $$\\ \hline \hline
+			& $$ & $$  &\end{tabular}	
+			\bigbreak
+\noindent
+			\begin{tabular}{lllll}
+				& PRECISION & RECALL  & F1\_SCORE & AUC     \\
+				Train & 0.181	  & 0.592 & 0.278     & 0.747 \\
+				Test  & 0.180     & 0.595   & 0.277     & 0.748   
+			\end{tabular}
+\bigbreak
+\noindent
+		Observation:\\
+        \bigbreak
+\noindent
+		-	All techniques of imbalance improve the performance logistic regression with almost the same intensity. The best is with SMOTE with recall score shooting as high as 0.6 at sampling strategy 0.9 and highest f1_score of approx 0.3 at sampling strategy 0.6. The statistical methods like Logistic regression tend to sharply underestimate the probability of rare events \textsuperscript{[2]}.\\
+		-	The L1 regularization form works best with imbalanced data fig 1 \textsuperscript{3}\\
+        \bigbreak
+\noindent
+		\includegraphics[width=\linewidth]{raja1.png}
+	%	\caption{In-text Picture}
+		\label{fig:results}
+		
+\noindent
+-The cost function based approach is by far the best for logistic with optimal results for both recall and f1_score. 
+	
+\bigbreak
+\noindent
+\textbf{K Nearest Neighbors: }
+\bigbreak
+\noindent
+\textbf{1) OVERSAMPLING:}
+\noindent
+F1_score at different levels of noise (noise-f1_score):\\
+(0.15, 0.107061),(0.45, 0.107061),(0.6, 0.107061),(0.75, 0.107061),(0.9, 0.107061)\\
+
+\noindent
+Y train before resampling Counter({0: 226132, 1: 19876})\\
+Sampling strategy-- For all sampling strategies:\\
+Y train after resampling Counter({0: 226132, 1: 33919})\\
+Improved number of features- 95\\
+Best parameter on grid-- {'n_neighbors': 1, 'algorithm': 'auto'}\\
+\bigbreak
+\noindent
+K NEAREST Neighbor: model:\\
+\bigbreak
+\noindent
+Train Confusion Matrix:
+\bigbreak
+\noindent
+\begin{tabular}{c|c|c||c}
+	$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+	\toprule 
+	L = 0 & $226132      $ & $0$ & $$\\
+	\midrule
+	L = 1 & $0      $ &$33919$ & $$\\ \hline \hline
+	& $$ & $$  &\end{tabular}
+	\bigbreak
+\noindent
+	Test Confusion Matrix:
+	\bigbreak
+\noindent
+	\begin{tabular}{c|c|c||c}
+		$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+		\toprule 
+		L = 0 & $52026           $ & $4528$ & $$\\
+		\midrule
+		L = 1 & $4413         	    $ &$536$ & $$\\ \hline \hline
+		& $$ & $$  &\end{tabular}	
+		\bigbreak
+\noindent
+		\begin{tabular}{lllll}
+			& PRECISION & RECALL  & F1\_SCORE & AUC      \\
+			Train & 1.00	  & 1.00 & 1.00     & 1.00 \\
+			Test  & 0.105  & 0.108   & 0.107     & 0.514   
+		\end{tabular}
+\bigbreak
+\noindent
+\textbf{2) SMOTE:}\\
+\bigbreak
+\noindent
+F1_score at different levels of noise (noise-f1_score):\\
+(0.15, 0.113533),(0.45, 0.127832),(0.6, 0.129434),\\
+(0.75,0.134434),(0.9, 0.134869)\\
+
+\newline
+\noindent
+Sampling strategy-- 0.9\\
+Y train after resampling Counter({0: 226132, 1: 203518})\\
+Improved number of features- 115\\
+Best parameter on grid-- {'n_neighbors': 1, 'algorithm': 'auto'}\\
+\bigbreak
+\noindent
+K NEAREST Neighbor: model:\\
+\bigbreak
+\noindent
+
+Train Co\noindentnfusion Matrix:
+\bigbreak
+\noindent
+\begin{tabular}{c|c|c||c}
+	$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+	\toprule 
+	L = 0 & $226132$ & $0$ & $$\\
+	\midrule
+	L = 1 & $0      $ &$203518$ & $$\\ \hline \hline
+	& $$ & $$  &\end{tabular}
+	\bigbreak
+\noindent
+	Test Confusion Matrix:
+	\bigbreak
+\noindent
+	\begin{tabular}{c|c|c||c}
+		$$ & $\hat{\mathrm{L}} = 0$ & $\hat{\mathrm{L}} = 1$ \\ 
+		\toprule 
+		L = 0 & $46927         $ & $9627$ & $$\\
+		\midrule
+		L = 1 & $3895      	    $ &$1054$ & $$\\ \hline \hline
+		& $$ & $$  &\end{tabular}	
+		\bigbreak
+\noindent
+		\begin{tabular}{lllll}
+			& PRECISION & RECALL  & F1\_SCORE & AUC      \\
+			Train & 1.00	  & 1.00 & 1.00     & 1.00 \\
+			Test  & 0.098     & 0.212   & 0.134     & 0.521   
+		\end{tabular}
+
+\bigbreak
+\noindent
+\textbf{3) Undersampling:}
+\bigbreak
+\noindent
+F1_score at different levels of noise (noise-f1_score):\\
+(0.15, 0. 0.125849),(0.45, 0.149095),(0.9, 0.155352)\\
+
+\textsuperscript{3}\\
+\includegraphics[width=\linewidth]{raja2.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+\bigbreak
+\noindent
+\textbf{Observation:}
+ \bigbreak
+\noindent
+
+\begin{itemize}
+\item Interestingly in the oversampling technique the KNN does not show any change in performance whatsoever. The accuracies at different noise levels are exactly the same. This is because replicating same dataset does not give any new additional information especially since the grid gives the 1 nearest neighbors as the winner. The class to which the new data belong- there is already one instance of that present before sampling so oversampling has absolutely no effect.\\
+\bigbreak
+\noindent
+\end{itemize}
+\begin{itemize}
+\item The SMOTE technique also uses KNN to synthetically add new data. Hence, since it is not a replication of the existing data, the new data gives useful information to the model. We can observe (from the f1_scores above) that with more synthetic data the KNN model is able to predict more. Hence, best sampling strategy is high at 0.9\\
+\bigbreak
+\noindent
+\item The undersampling technique works best for KNN at sampling strategy 0.9 with the best f1_score at 0.155352. More importantly since the model can learn the minority class as much as the majority class at sampling strategy 0.9, the recall is very high i.e. the true positives are highest at 0.5. We observe an increase in the performance as the balance is increased in the dataset.
+
+\bigbreak
+\noindent
+\end{itemize}
+
+
+
+There are no class weights based approach for KNN.
+
+\pagebreak
+\noindent
+\textbf{XGBoost: }
+\bigbreak
+\noindent
+\textbf{Why XGBoost?}
+\bigbreak
+\noindent
+
+XGBoost is an advanced implementation of gradient boosted decision trees designed for speed and performance. Some advantages of using XGBoost are:\\
+\begin{itemize}
+	\item Regularization : Standard GBM has no regularization like XGBoost, thus it helps reduce overfitting.
+	\item Parallel Processing : faster as compared to GBM (sequential process)
+	\item 	High Flexibility : User can define Custom Optimization Objective and Evaluation criteria
+	\item Handling Missing Values : Imputes missing values on side that has reduced loss
+	\item 	Tree Pruning : GBM stops splitting when it encounters negative loss in the split. Thus it is more of a greedy algorithm. XGBoost on the other hand make aplits upto the max_depth specified by the user and then start pruning tree backwards and remove splits beyond which we do not have positive gain. \\
+	Example: Another advantage is that sometimes a split of negative loss say -2 may be followed by a split of positive loss +10. GBM would stop as it encounters -2. But XGBoost will go deeper and it will see a combined effect of +8 of the split and keep both.
+	\item 	Built In Cross Validation: XGBoost allows user to run a cross-validation at each iteration of the boosting process.
+\end{itemize}
+
+\noindent
+Now as our data is having many missing values and due to computation power of XGBoost, we used XGBoost.\\
+
+\noindent
+\textbf{What we tried for XGBoost?}
+
+\noindent
+1.	XGBoost model on application_train.csv :\\
+We did some manual feature engineering for this csv file and then we applied our model on it. After that parameter tuning was done  and at the end we came up with below metric results:\\
+\bigbreak
+
+\includegraphics[width=\linewidth]{utsavxg1.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+ 
+\noindent
+2.	XGBoost model on application_train.csv (Feature Engineering in previous step plus 15 most missing columns dropped):\\
+
+\noindent
+After the 1st method, I thought to drop top 15 missing columns. Moreover, we tried to drop column by column and the efficiency of model increased up till dropping 15 columns and then it decreased. Thus, we decided not to drop more than 15 columns.
+After this we did parameter tuning to come up with a model that can give best efficiency for this data. 
+
+\includegraphics[width=\linewidth]{utsavxg2.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+
+\noindent
+We can note that compared to previous one, AUC of Train and test both increased. Moreover, having a closer look at the True Negatives, we can see that they increased from 1389 to 1466 just by dropping 15 unwanted columns.\\
+
+\noindent
+3.	XGBoost on application_train_imputed.csv:\\
+\bigbreak
+\noindent
+Application_train_imputed.csv was imputed logically by us in best manner that we can come up with. It contained NO NULL values in it. It was imputed by Imputer with mode and mean as imputing metric. We applied XGBoost on that and did best parameter tuning that we could do. Below are the results:
+
+\includegraphics[width=\linewidth]{utsavxg3.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+
+\noindent
+4.	XGBoost on application_train_imputed.csv + SMOTE:\\
+\noindent
+Taking the same data ie. Application_train_imputed.csv we applied oversampling with the help of SMOTE. SMOTE is a technique used to oversample the data label that is very few. We tried to oversample the data label that is much less ie. People who will default. The results were not as expected as this. It did not improve with a much extent. The number of defaulter detection increased but not with a great extent which we were expecting. Moreover, here what we should be concern about is innocent people being declared as defaulters. Here we can see that SMOTE declares 19000 people as defaulters which are actually not.  Below is the evaluation results that we got after doing parameter tuning. \\
+
+\includegraphics[width=\linewidth]{utsavxg4.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+
+\noindent
+5.	XGBOOST on all 7 tables combined 
+(FINALHOMECREDIT.csv):\\
+\noindent
+The data file that we prepared by combining all 7 tables was used here. It was having shape of (307507,798). This data file was providing test AUC of 0.7817 and it detected almost 1600 defaulters which was almost highest as compared to all above. We should be glad about AUC curve as  the highest ranking solution of Kaggle has AUC of 0.8057\\
+\includegraphics[width=\linewidth]{utsavxg5.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+
+\noindent
+\textbf{What Worked?}\\
+Using FINALHOMECREDIT.csv  table worked for us as it was made up with all 7 tables. Moreover, it gave best AUC curve till now of all models that we applied within XGBoost and except XGBoost also.
+\bigbreak
+\noindent
+\textbf{What didn’t work?}\\
+SMOTE was highly expected to work while we are having such a huge amount of imbalanced data(92\% - 8\%). Smote not only didn’t worked, it misclassified 19000 people who are not defaulters as defaulters which should never happen as the Loan company will have a great loss loosing such customers. Compared to SMOTE results of detecting almost 71\% of people who will default, the results of XGBoost in 5th model (on FINALHOMECREDIT.csv) is a lot better which is just detecting 30\% of people who are defaulters because SMOTE misclassifies 34\% of nondefaulters (19000 people), while our 5th model misclassifies only 5\%(3,000) of people who are nondefaulters. 
+
+
+\bigbreak
+\noindent
+\textbf{What could be done in future?}\\
+I believe due to large amount of data, we could not do parameter tuning to the level that we do normally for small datasets. Easily the models took 1 hour sometimes to run and it is not feasible on local machine to keep it on parameter tuning phase as it would take much much longer time. Thus, if we would be having a very good GPU access, we would have achieved still better AUC metric. \\
+Apart from this, we can try Neural Networks and  CatBoost, which I had a very great affinity towards. We can also do Ensembling of XGBoost, LightGbm and Neural Networks. We would definitely increase efficiencies if we would have done so.
+
+\bigbreak
+\noindent
+\textbf{LightGbm Classifier:} \\
+\bigbreak
+\noindent
+\textbf{Why did we try LightGbm?}\\
+\bigbreak
+\noindent
+Light GBM is a gradient boosting framework that uses tree based learning algorithm.
+Light GBM grows tree vertically while other algorithm grows trees horizontally. It means that Light GBM grows tree leaf-wise while other algorithm grows level-wise. It will choose the leaf with max delta loss to grow. When growing the same leaf, Leaf-wise algorithm can reduce more loss than a level-wise algorithm.\\
+We preferred LightGBm to run because \\
+•	We have large data and it works very well on large size of data and its processing speed is also high. Moreover it also takes lower memory to run.  \\
+•	We need fast computation here and LightGbm supports GPU Learning. \\
+\bigbreak
+\noindent
+\textbf{What did we  try for LightGbm?}\\
+\bigbreak
+\noindent
+We tried following things:\\
+
+\noindent
+1.	LightGbm on application_train_imputed.csv file:\\
+Application_train_imputed.csv was imputed logically by us in best manner that we can come up with. It contained NO NULL values in it. It was imputed by Imputer with mode and mean as imputing metric. \\
+
+\noindent
+We applied LightGbm on it and the results were not satisfactory. Though it misclassified only small amount of people who were nondefaulters which is good but on the contrary it also did not detect many defaulters . Parameter tuning was done after that but all models were having almost same classification report as mentioned below. There was no change for almost all models that I found by parameter tuning. \\ 
+
+\includegraphics[width=\linewidth]{utsavlg1.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+
+\bigbreak
+\noindent
+2.	LightGbm on application_train_imputed.csv file + SMOTE:\\
+Here we have used same file as above but in addition we have also used SMOTE technique to increase the sample. It did not turn out very well. In fact it decreased the models performance.\\ 
+
+\includegraphics[width=\linewidth]{utsavlg2.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+\bigbreak
+\noindent
+3.	LightGbm on all 7 table combined file (FINALHOMECREDIT.csv):\\
+\bigbreak
+\noindent
+The data file that we prepared by combining all 7 tables was used here. It was having shape of (307507,798). So far, for LightGbm, this was the best model that worked. A small amount of parameter tuning was done for this one. \\
+
+\includegraphics[width=\linewidth]{utsavlg3.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+\bigbreak
+\noindent
+4.	LightGbm on all 7 tables combined file + parameter tuning:
+Here parameter tuning was done for a great amount of time. It took almost 12 hours on local PC to run the KFoldCV.\\
+Below were the parameters that we used for Classifier and we did K Fold CV for a shape of almost 300000. Apart from these the estimators are nearly 10000 which lead to much extensive time. In this model we achieved AUC metric of 0.7861 which was a lot better than other models that we performed. \\
+\includegraphics[width=\linewidth]{utsavlg4.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+
+
+\includegraphics[width=\linewidth]{utsavlg5.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+\bigbreak
+\noindent
+Below is the features that were found most important and we got this by doing feature_importances over K Folds.\\
+\includegraphics[width=\linewidth]{utsavlg6.png}
+%	\caption{In-text Picture}
+\label{fig:results}
+
+%SHASHACOMPLETE
+%#############
+%\lipsum[5] % Dummy text
+\bigbreak
+\noindent
+\textbf{What Worked?}\\
+A key thing to notice about LightGbm here was though the models were not detecting defaulters, it also was not misclassifying the nondefaulters. The AUC metric for 4th model was the best one and it worked well. We received a metric of 0.7886 while Kaggle top scorer got 0.80.\\
+\bigbreak
+\noindent
+\textbf{What did not work?}\\
+The results that we achieve with SMOTE are really bad in both XGboost and LightGbm. Here we can easily conclude that Smote surely doesn’t works  well for both the models used.\\ Detecting the number of more defaulters did not worked well , that could have been improved by much more parameter tuning then that we did. But, unfortunately our PC were not having that capability to run for such a longer time. \\
+\bigbreak
+\noindent
+\textbf{What could be done in future?}\\
+A lot more things could be done in future. One such thing is using Ensemble Modeling of multiple LightGbms. Our only benefit of LightGbm here was it was not misclassifying nondefaulters, which was really a great thing as company would not be willing to loose 100 nondefaulters in order to catch just one defaulter. Thus, what we can do is, we can ensemble many more weak learners that we are already having right now and ensemble them up into one model. Apart from this, another thing that could be done is try more parameter tuning with the model building phase. 
+
+
+\pagebreak
+\section{CONCLUSION:}
+
+SUMMARY and CONCLUSION:\\
+-The mean mode technique works best to impute the missing values\\
+- We use the recall, F1_score and ROC_AUC score to compare models\\
+-Oversampling stands mediocre with RF and Decision trees and performs lowest for KNN.\\
+-Smote deteriorates or has no effect on the performance of Decision trees and Random forest.\\
+-Undersampling boosts the performance the most for all the four models when compared to oversampling and smote.\\
+-Cost function based approach works well for all models except for Random Forest.\\
+- Amongst the four models (RF, DT, Logistic, KNN) Logistic performs the best with cost function based resampling at 1:9 class weights for majority:minority class. Highest f1_score--.28, recall=0.6 and ROC_AUC_Score=0.75
+
+\section{REFERENCES:}
+
+1. https://datascience.stackexchange.com/questions/9440/how-to-customise-cost-function-in-scikit-learns-model\\
+2. https://gking.harvard.edu/files/abs/0s-abs.shtml\\
+3. https://datascience.stackexchange.com/questions/3699/what-cost-function-and-penalty-are-suitable-for-imbalanced-datasets/5031\\
+4. https://www.kaggle.com/willkoehrsen/start-here-a-gentle-introduction\\
+5. https://www.kaggle.com/c/home-credit-default-risk\\
+
+\textbf{other sources used:}\\
+ https://medium.com/@pushkarmandot/https-medium-com-pushkarmandot-what-is-lightgbm-how-to-implement-it-how-to-fine-tune-the-parameters-60347819b7fc\\
+ 
+ https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-xgboost-with-codes-python/ \\
+ 
+ https://towardsdatascience.com/fine-tuning-xgboost-in-python-like-a-boss-b4543ed8b1e\\
+ 
+ https://towardsdatascience.com/machine-learning-kaggle-competition-part-two-improving-e5b4d61ab4b8\\
+ 
+ https://nycdatascience.com/blog/student-works/kaggle-predict-consumer-credit-default/ \\
+ https://www.kaggle.com/aantonova/797-lgbm-and-bayesian-optimization \\
+ https://www.linkedin.com/pulse/winning-9th-place-kaggles-biggest-competition-yet-home-levinson/\\
+ 
+ https://medium.com/@mateini_12893/doing-xgboost-hyper-parameter-tuning-the-smart-way-part-1-of-2-f6d255a45dde\\
+ 
+ https://www.kaggle.com/willkoehrsen/start-here-a-gentle-introduction \\
+ 
+ https://www.kaggle.com/ogrellier/lighgbm-with-selected-features/ \\
+ https://www.kaggle.com/jsaguiar/lightgbm-with-simple-features \\
+ https://www.kaggle.com/ogrellier/good-fun-with-ligthgbm\\
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+%------------------------------------------------
+\phantomsection
+\section*{Acknowledgments} % The \section*{} command stops section numbering
+
+\addcontentsline{toc}{section}{Acknowledgments} % Adds this section to the table of contents
+
+
+
+We would like to express our special thanks and gratitude to our professor Gregory Rawlins for his support and guidance.\\
+
+Also a special thanks to our Associate instructors -\\
+ Zeeshan Ali Sayyed,Christopher Torres-Lugo	,Manoj Joshi	
+
+%----------------------------------------------------------------------------------------
+%	REFERENCE LIST
+%----------------------------------------------------------------------------------------
+%\phantomsection
+%\bibliographystyle{unsrt}
+%\bibliography{sample}
+
+%----------------------------------------------------------------------------------------
+
+\end{document}
